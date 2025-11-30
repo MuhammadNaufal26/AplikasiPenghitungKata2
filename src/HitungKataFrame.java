@@ -1,3 +1,8 @@
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
@@ -14,8 +19,68 @@ public class HitungKataFrame extends javax.swing.JFrame {
      */
     public HitungKataFrame() {
         initComponents();
+        
+        txtArea.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { hitungSemua(); }
+            public void removeUpdate(DocumentEvent e) { hitungSemua(); }
+            public void changedUpdate(DocumentEvent e) { hitungSemua(); }
+        });
+    }
+    
+    private void hitungSemua() {
+        String teks = txtArea.getText().trim();
+
+        // Hitung kata
+        int jumlahKata = teks.isEmpty() ? 0 : teks.split("\\s+").length;
+
+        // Hitung karakter
+        int jumlahKarakter = teks.length();
+
+        // Hitung kalimat
+        int jumlahKalimat = teks.isEmpty() ? 0 : teks.split("[.!?]+").length;
+
+        // Hitung paragraf (dipisah enter)
+        int jumlahParagraf = teks.isEmpty() ? 0 : teks.split("\\n+").length;
+
+        lblKata.setText("" + jumlahKata);
+        lblKarakter.setText("" + jumlahKarakter);
+        lblKalimat.setText("" + jumlahKalimat);
+        lblParagraf.setText("" + jumlahParagraf);
     }
 
+    private void cariKata() {
+        String teks = txtArea.getText().toLowerCase();
+        String cari = txtCari.getText().toLowerCase();
+
+        if (cari.isEmpty()) {
+            lblCari.setText("Masukkan kata terlebih dahulu.");
+            return;
+        }
+
+        int count = 0;
+        for (String s : teks.split("\\s+")) {
+            if (s.equals(cari)) count++;
+        }
+
+        lblCari.setText("Kata ditemukan: " + count + " kali");
+    }
+    
+    private void saveToFile() {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("hasil_penghitung_kata.txt"))) {
+            bw.write("TEKS:\n");
+            bw.write(txtArea.getText());
+            bw.write("\n\nHASIL PERHITUNGAN:\n");
+            bw.write("Jumlah Kata      : " + lblKata.getText() + "\n");
+            bw.write("Jumlah Karakter  : " + lblKarakter.getText() + "\n");
+            bw.write("Jumlah Kalimat   : " + lblKalimat.getText() + "\n");
+            bw.write("Jumlah Paragraf  : " + lblParagraf.getText() + "\n");
+            bw.flush();
+
+            lblCari.setText("Berhasil disimpan ke file.");
+        } catch (Exception e) {
+            lblCari.setText("Gagal menyimpan file.");
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -31,7 +96,7 @@ public class HitungKataFrame extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         btnHitung = new javax.swing.JButton();
         scrollInput = new javax.swing.JScrollPane();
-        txtArea = new java.awt.TextArea();
+        txtArea = new javax.swing.JTextArea();
         jPanel3 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
@@ -59,7 +124,14 @@ public class HitungKataFrame extends javax.swing.JFrame {
         jLabel2.setText("Masukkan Teks:");
 
         btnHitung.setText("Hitung");
+        btnHitung.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnHitungActionPerformed(evt);
+            }
+        });
 
+        txtArea.setColumns(20);
+        txtArea.setRows(5);
         scrollInput.setViewportView(txtArea);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -68,12 +140,14 @@ public class HitungKataFrame extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(34, 34, 34)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(btnHitung)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jLabel2)
-                        .addComponent(scrollInput, javax.swing.GroupLayout.PREFERRED_SIZE, 371, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(39, Short.MAX_VALUE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2)
+                    .addComponent(scrollInput, javax.swing.GroupLayout.PREFERRED_SIZE, 371, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(31, Short.MAX_VALUE))
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnHitung)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -84,7 +158,7 @@ public class HitungKataFrame extends javax.swing.JFrame {
                 .addComponent(scrollInput, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnHitung)
-                .addContainerGap(21, Short.MAX_VALUE))
+                .addContainerGap(43, Short.MAX_VALUE))
         );
 
         jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
@@ -112,10 +186,20 @@ public class HitungKataFrame extends javax.swing.JFrame {
         jLabel12.setText("Hasil");
 
         btnCari.setText("Search");
+        btnCari.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCariActionPerformed(evt);
+            }
+        });
 
         lblCari.setText("-");
 
         btnSave.setText("Save");
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -124,7 +208,7 @@ public class HitungKataFrame extends javax.swing.JFrame {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addContainerGap(143, Short.MAX_VALUE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel12))
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
@@ -193,9 +277,9 @@ public class HitungKataFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -214,6 +298,21 @@ public class HitungKataFrame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnHitungActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHitungActionPerformed
+        // TODO add your handling code here:
+        hitungSemua();
+    }//GEN-LAST:event_btnHitungActionPerformed
+
+    private void btnCariActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCariActionPerformed
+        // TODO add your handling code here:
+        cariKata();
+    }//GEN-LAST:event_btnCariActionPerformed
+
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+        // TODO add your handling code here:
+        saveToFile();
+    }//GEN-LAST:event_btnSaveActionPerformed
 
     /**
      * @param args the command line arguments
@@ -273,7 +372,7 @@ public class HitungKataFrame extends javax.swing.JFrame {
     private javax.swing.JLabel lblKata;
     private javax.swing.JLabel lblParagraf;
     private javax.swing.JScrollPane scrollInput;
-    private java.awt.TextArea txtArea;
+    private javax.swing.JTextArea txtArea;
     private javax.swing.JTextField txtCari;
     // End of variables declaration//GEN-END:variables
 }
