@@ -1,8 +1,8 @@
 TEKS:
-ssddddddccccccccccccccccccccssssss apa
+sas
 
 HASIL PERHITUNGAN:
-Jumlah Kata      : 2
-Jumlah Karakter  : 38
+Jumlah Kata      : 1
+Jumlah Karakter  : 3
 Jumlah Kalimat   : 1
 Jumlah Paragraf  : 1
